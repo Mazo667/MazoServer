@@ -22,10 +22,10 @@ void sig_chld(int signo){
 }
 
 int main() {
-    int servidor_socket, cliente_socket, len;
-    struct sockaddr_in servidor_addr;
+    int servidor_socket, cliente_socket;
+    struct sockaddr_in servidor_addr, cliente_addr;
     socklen_t cliente_len;
-    char buffer[1000];
+    char buffer[4096];
 
     // Crear el socket del servidor
     servidor_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,6 +33,10 @@ int main() {
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
     }
+    //Permitir la reutilizion de la direccion del socket
+    int option;
+    option = SO_REUSEADDR;
+    setsockopt(servidor_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
     // Configurar la estructura de dirección del servidor
     bzero((char*) &servidor_addr,sizeof(servidor_addr));
@@ -41,18 +45,20 @@ int main() {
     servidor_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     servidor_addr.sin_port = htons(PUERTO);
 
-    len = sizeof(struct sockaddr_in);
 
-    bind(servidor_socket, (struct sockaddr*) &servidor_addr, len);
+      if (bind(servidor_socket, (struct sockaddr *) &servidor_addr, sizeof(servidor_addr)) < 0) //Bind the socket to the server address
+              perror("ERROR on binding");
 
-    listen(servidor_socket, 10);
+    listen(servidor_socket, 5);
 
     printf("Servidor listo para recibir conexiones en el puerto %d\n", PUERTO);
     
     signal(SIGCHLD,sig_chld);
 
     while (1) {
-    cliente_socket = accept(servidor_socket, (struct sockaddr*) &servidor_addr, &len);
+    cliente_len = sizeof(cliente_addr);
+    
+    cliente_socket = accept(servidor_socket, (struct sockaddr*) &cliente_addr, &cliente_len);
     if (cliente_socket < 0) {
         perror("Error al aceptar la conexión");
         exit(EXIT_FAILURE);
@@ -61,6 +67,8 @@ int main() {
     printf("Conexión aceptada\n");
     
     if(fork()==0){
+    int pid = getpid();
+    printf("Proceso hijo creado %d id\n",pid);
     // Cerrar el socket del servidor en el proceso hijo
     close(servidor_socket);
 
@@ -72,7 +80,7 @@ int main() {
     }
     buffer[bytes_recibidos] = '\0'; // Agregar el carácter nulo al final del buffer
 
-    printf("Solicitud del cliente:\n%s\n", buffer);
+    //printf("Solicitud del cliente:\n%s\n", buffer);
 
     // Determinar qué programa ejecutar según la solicitud del cliente
     if (strstr(buffer, "GET") != NULL) {
