@@ -23,9 +23,9 @@ void sig_chld(int signo){
 
 int main() {
     int servidor_socket, cliente_socket, len;
-    struct sockaddr_in servidor_addr, cliente_addr;
+    struct sockaddr_in servidor_addr;
     socklen_t cliente_len;
-    char buffer[100];
+    char buffer[1000];
 
     // Crear el socket del servidor
     servidor_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -43,31 +43,27 @@ int main() {
 
     len = sizeof(struct sockaddr_in);
 
-    // Vincular el socket del servidor a la dirección y el puerto
-    if (bind(servidor_socket, (struct sockaddr*)&servidor_addr, len) < 0) {
-        perror("Error al vincular el socket del servidor");
-        exit(EXIT_FAILURE);
-    }
+    bind(servidor_socket, (struct sockaddr*) &servidor_addr, len);
 
-    // Escuchar conexiones entrantes
-    if (listen(servidor_socket, 10) < 0) {
-        perror("Error al escuchar conexiones entrantes");
-        exit(EXIT_FAILURE);
-    }
+    listen(servidor_socket, 10);
 
     printf("Servidor listo para recibir conexiones en el puerto %d\n", PUERTO);
     
     signal(SIGCHLD,sig_chld);
 
     while (1) {
-    cliente_socket = accept(servidor_socket, (struct sockaddr*)&cliente_addr, &len);
+    cliente_socket = accept(servidor_socket, (struct sockaddr*) &servidor_addr, &len);
     if (cliente_socket < 0) {
         perror("Error al aceptar la conexión");
         exit(EXIT_FAILURE);
     }
+
     printf("Conexión aceptada\n");
     
     if(fork()==0){
+    // Cerrar el socket del servidor en el proceso hijo
+    close(servidor_socket);
+
     // Leer la solicitud del cliente
     ssize_t bytes_recibidos = recv(cliente_socket, buffer, sizeof(buffer) - 1, 0);
     if (bytes_recibidos < 0) {
