@@ -76,30 +76,31 @@ int main() {
 
     // Determinar qué programa ejecutar según la solicitud del cliente
     if (strstr(buffer, "GET") != NULL) {
-            char *pedido_get = "./pedido_get"; // Ruta al programa que maneja las solicitudes GET
-            char *argv[] = {pedido_get, NULL}; // Argumentos para el programa
-            execv(pedido_get, argv); // Ejecutar el programa
-            // Si execv() retorna, ha habido un error
-            perror("Error al ejecutar el programa pedido_get para GET");
-            exit(EXIT_FAILURE);
+        char *pedido_get = "./pedido_get"; // Ruta al programa que maneja las solicitudes GET
+        char *argv[] = {pedido_get, NULL}; // Argumentos para el programa
+        execv(pedido_get, argv); // Ejecutar el programa
+        // Si execv() retorna, ha habido un error
+        perror("Error al ejecutar el programa pedido_get para GET");
+        exit(EXIT_FAILURE);
     } else if (strstr(buffer, "HEAD") != NULL) {
-            char *pedido_head = "./pedido_head"; // Ruta al programa que maneja las solicitudes HEAD
-            char *argv[] = {pedido_head, NULL}; // Argumentos para el programa
-            execv(pedido_head, argv); // Ejecutar el programa
-            // Si execv() retorna, ha habido un error
-            perror("Error al ejecutar el programa pedido_head para HEAD");
-            exit(EXIT_FAILURE);
+        char *pedido_head = "./pedido_head"; // Ruta al programa que maneja las solicitudes HEAD
+        char *argv[] = {pedido_head, NULL}; // Argumentos para el programa
+        execv(pedido_head, argv); // Ejecutar el programa
+        // Si execv() retorna, ha habido un error
+        perror("Error al ejecutar el programa pedido_head para HEAD");
+        exit(EXIT_FAILURE);
     } else {
-            char *pedido_error = "./pedido_error"; // Ruta al programa que maneja los errores
-            char *argv[] = {pedido_error, NULL}; // Argumentos para el programa
-            execv(pedido_error, argv); // Ejecutar el programa
-            // Si execv() retorna, ha habido un error
-            perror("Error al ejecutar el programa pedido_error para errores");
-            exit(EXIT_FAILURE);
+        char *pedido_error = "./pedido_error"; // Ruta al programa que maneja los errores
+        char *argv[] = {pedido_error, NULL}; // Argumentos para el programa
+        execv(pedido_error, argv); // Ejecutar el programa
+        // Si execv() retorna, ha habido un error
+        perror("Error al ejecutar el programa pedido_error para errores");
+        exit(EXIT_FAILURE);
     }
 
     // Cerrar el socket del cliente
     close(cliente_socket);
+    exit(0);
     }
     
     // Cerrar el socket del servidor
