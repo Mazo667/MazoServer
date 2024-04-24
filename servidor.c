@@ -12,9 +12,11 @@
 
 #define PUERTO 8000
 
+
+
 //Creo la funcion sig_chld para que el proceso padre pueda esperar a que los hijos terminen
 void sig_chld(int signo){
-	pid_t	pid;
+	pid_t pid;
 	int	stat;
 	while ( (pid = waitpid(-1, &stat, WNOHANG)) > 0)
 		printf(" Hijo %d ha terminado\n", pid);
@@ -33,7 +35,7 @@ int main() {
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
     }
-    //Permitir la reutilizion de la direccion del socket
+    //Permitir la reutilizion del puerto de escucha
     int option;
     option = SO_REUSEADDR;
     setsockopt(servidor_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
@@ -64,22 +66,51 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    bzero(buffer,1000);
+
     printf("Conexión aceptada\n");
     
     if(fork()==0){
     int pid = getpid();
     printf("Proceso hijo creado %d id\n",pid);
 
-    // Leer la solicitud del cliente
-    ssize_t bytes_recibidos = recv(cliente_socket, buffer, sizeof(buffer) - 1, 0);
-    if (bytes_recibidos < 0) {
-        perror("Error al leer la solicitud del cliente");
-        exit(EXIT_FAILURE);
+    int n = read(cliente_socket, buffer, sizeof(buffer) - 1);
+    if(n < 0) perror("Error en leyendo el socket");
+
+    printf("Status Code: (%d)\n", n);
+    printf("Mensaje: %s\n", buffer);
+    /*
+    //divide las cadenas de la solicitud y queda con el nombre del archivo solicitado
+    char *filename = strtok(buffer," "); 
+    filename = strtok(NULL," "); 
+    filename = strtok(filename,"/"); 
+    printf("Archivo solicitado: %s\n", filename);
+    */
+
+   char *method = strtok(buffer, " "); //GET,HEAD o POST
+
+    if (strcmp(method, "GET") == 0) {
+    printf("Se recibio el metodo GET\n");
+    char *filename = strtok(NULL, " "); //nombre del archivo
+    filename = strtok(filename,"/"); 
+    if(filename == NULL){
+        printf("No solicito nada.");
+    }else{
+        printf("Archivo solicitado: %s\n", filename);
     }
-    buffer[bytes_recibidos] = '\0'; // Agregar el carácter nulo al final del buffer
 
-    printf("Solicitud del cliente:\n%s\n", buffer);
+    }
+    else if (strcmp(method, "HEAD") == 0) {
+    printf("Se recibio el metodo HEAD\n");    
+    }
+    else {
+    printf("Metodo no soportado\n");
+    }
 
+  // char *filename = strtok(NULL, " "); //nombre del archivo
+  // printf("Archivo solicitado: %s\n", filename);
+
+    /*
     // Determinar qué programa ejecutar según la solicitud del cliente
     if (strstr(buffer, "GET") != NULL) {
         char *pedido_get = "./pedido_get"; // Ruta al programa que maneja las solicitudes GET
@@ -103,12 +134,12 @@ int main() {
         perror("Error al ejecutar el programa pedido_error para errores");
         exit(EXIT_FAILURE);
     }
-
+    */
+    
     // Cerrar el socket del cliente
     close(cliente_socket);
     exit(0);
     }
-    
 }
     // Cerrar el socket del servidor
     close(servidor_socket);
