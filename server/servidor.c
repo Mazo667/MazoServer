@@ -98,6 +98,7 @@ int main()
                             char response[4096];
                             sprintf(response,
                                     "HTTP/1.1 403 Forbidden\r\n"
+                                    "Server: ServidorSejin/1.0\r\n"
                                     "Content-Length: 0\r\n"
                                     "Date: %s\r\n"
                                     "Connection: close\r\n\r\n",
@@ -114,11 +115,32 @@ int main()
                         }
 
             } else if (strcmp(method, "HEAD") == 0) {
-                        char cliente_socket_str[12];
-                        sprintf(cliente_socket_str, "%d", cliente_socket); // Convertir el descriptor de archivo a una cadena
-                        char *args[] = {"./pedido_head", cliente_socket_str, NULL};
-                        execv(args[0], args);
-                        exit(0);
+                        char *filename = strtok(NULL, " "); // nombre del archivo solicitado
+                        filename = strtok(filename, "/");   // nombre del archivo solicitado
+                        printf("filename: %s\n", filename);
+
+                        // pregunto si  solicito un archivo
+                        if (filename == NULL){
+                            printf("No se solicitó un archivo\n");
+                            char response[4096];
+                            sprintf(response,
+                                    "HTTP/1.1 403 Forbidden\r\n"
+                                    "Server: ServidorSejin/1.0\r\n"
+                                    "Content-Length: 0\r\n"
+                                    "Date: %s\r\n"
+                                    "Connection: close\r\n\r\n",
+                                    getActualTime());
+                            write(cliente_socket, response, strlen(response));
+                            close(cliente_socket);
+                            exit(0);
+                        }else{
+                            char cliente_socket_str[12];
+                            sprintf(cliente_socket_str, "%d", cliente_socket); // Convertir el descriptor de archivo a una cadena
+                            char *args[] = {"./pedido_head", cliente_socket_str, filename, NULL};
+                            execv(args[0], args);
+                            exit(0);
+                        }
+
             }
             else {
                 printf("Metodo no soportado\n");
