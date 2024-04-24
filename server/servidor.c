@@ -10,7 +10,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "helper/getTime.c"
+#include "helpers/getTime.c"
 
 #define PUERTO 8000
 
@@ -86,15 +86,15 @@ int main() {
     if (strcmp(method, "GET") == 0) {
     char *filename = strtok(NULL, " "); //nombre del archivo solicitado
     filename = strtok(filename, "/"); //nombre del archivo solicitado 
-        char *date = getActualTime();
         //pregunto si solicito un archivo
         if(filename == NULL){
             printf("No se solicitó un archivo\n");
-            char *response = 
+            char response[4096];
+            sprintf(response, 
             "HTTP/1.1 403 Forbidden\r\n"
             "Content-Length: 0\r\n"
             "Date: %s\r\n"
-            "Connection: close\r\n\r\n",date;
+            "Connection: close\r\n\r\n",getActualTime() );
             write(cliente_socket, response, strlen(response));
             close(cliente_socket);
             exit(0);
@@ -102,7 +102,6 @@ int main() {
             printf("Archivo solicitado: %s\n", filename);
             char baseDir[] = "/home/maximiliano/Descargas/";
             strcat(baseDir, filename);
-             char *date = getActualTime();
             printf("Ruta del archivo: %s\n", baseDir);
             //abrir el archivo solicitado
             FILE *file = fopen(baseDir, "r");
@@ -110,11 +109,12 @@ int main() {
             /*PREGUNTO SI SE PUEDE ABRIR EL ARCHIVO*/
             if (file == NULL) {
                 printf("No se pudo abrir el archivo\n");
-                char *response = 
+                char response[4096];
+                sprintf(response, 
                 "HTTP/1.1 404 Not Found\r\n"
                 "Content-Length: 0\r\n"
                 "Date: %s\r\n"
-                "Connection: close\r\n\r\n", date;
+                "Connection: close\r\n\r\n", getActualTime() );
             
                 write(cliente_socket, response, strlen(response));
                 close(cliente_socket);
@@ -148,7 +148,6 @@ int main() {
                 /*ENVIO EL ARCHIVO AL CLIENTE*/
                 char *body = "<html><body><h1>HOLA</h1></body></html>\r\n";
                 int body_length = strlen(body);
-                char *date = getActualTime();
 
                 char response[4096];
                 sprintf(response, 
@@ -158,7 +157,7 @@ int main() {
                 "Date: %s\r\n"
                 "Content-Type: text/html\r\n"
                 "\r\n"
-                "%s", body_length, date, body);
+                "%s", body_length, getActualTime(), body);
             
                 write(cliente_socket, response, strlen(response));
                 close(cliente_socket);
@@ -173,13 +172,12 @@ int main() {
         //pregunto si solicito un archivo
         if(filename == NULL){
             printf("No se solicitó un archivo\n");
-            char *date = getActualTime();
             char response[4096];
             sprintf(response, 
             "HTTP/1.1 403 Forbidden\r\n"
             "Content-Length: 0\r\n"
             "Date: %s\r\n"
-            "Connection: close\r\n\r\n", date);
+            "Connection: close\r\n\r\n", getActualTime() );
             write(cliente_socket, response, strlen(response));
             close(cliente_socket);
             exit(0);
@@ -188,7 +186,6 @@ int main() {
             char baseDir[] = "/home/maximiliano/Descargas/";
             strcat(baseDir, filename);
             printf("Ruta del archivo: %s\n", baseDir);
-            char *date = getActualTime();
             //abrir el archivo solicitado
             FILE *file = fopen(baseDir, "r");
 
@@ -200,7 +197,7 @@ int main() {
                 "HTTP/1.1 404 Not Found\r\n"
                 "Content-Length: 0\r\n"
                 "Date: %s\r\n"
-                "Connection: close\r\n\r\n", date);
+                "Connection: close\r\n\r\n", getActualTime() );
             
                 write(cliente_socket, response, strlen(response));
                 close(cliente_socket);
@@ -211,7 +208,6 @@ int main() {
                 /*ENVIO EL ARCHIVO AL CLIENTE*/
                 char *body = "<html><body><h1>HOLA</h1></body></html>\r\n";
                 int body_length = strlen(body);
-                char *date = getActualTime();
                 char response[4096];
                 sprintf(response, 
                 "HTTP/1.1 200 OK\r\n"
@@ -220,8 +216,7 @@ int main() {
                 "Date: %s\r\n"
                 "Content-Type: text/html\r\n"
                 "\r\n"
-                , body_length,date);
-            
+                , body_length, getActualTime() );
                 write(cliente_socket, response, strlen(response));
                 close(cliente_socket);
                 exit(0);
@@ -230,11 +225,13 @@ int main() {
     }
     else {
         printf("Metodo no soportado\n");
-        char *response = 
+        char response[4096];
+        sprintf(response,
         "HTTP/1.1 501 Not Implemented\r\n"
         "Server: ServidorHTTP/1.0\r\n"
+        "Date: %s\r\n"
         "Content-Length: 0\r\n"
-        "Connection: close\r\n\r\n";
+        "Connection: close\r\n\r\n", getActualTime() );
         
         write(cliente_socket, response, strlen(response));
         close(cliente_socket);
