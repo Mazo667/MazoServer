@@ -8,7 +8,7 @@
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8000
-#define REQUEST "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
+#define REQUEST "POST / HTTP/1.1\r\nHost: localhost\r\n\r\n"
 
 int main() {
     int sock;

@@ -12,8 +12,6 @@
 
 #define PUERTO 8000
 
-
-
 //Creo la funcion sig_chld para que el proceso padre pueda esperar a que los hijos terminen
 void sig_chld(int signo){
 	pid_t pid;
@@ -48,8 +46,8 @@ int main() {
     servidor_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 
-      if (bind(servidor_socket, (struct sockaddr *) &servidor_addr, sizeof(servidor_addr)) < 0) //Bind the socket to the server address
-              perror("ERROR on binding");
+    if (bind(servidor_socket, (struct sockaddr *) &servidor_addr, sizeof(servidor_addr)) < 0) //Bind the socket to the server address
+            perror("ERROR on binding");
 
     listen(servidor_socket, 5);
 
@@ -75,42 +73,103 @@ int main() {
     printf("Proceso hijo creado %d id\n",pid);
 
     int n = read(cliente_socket, buffer, sizeof(buffer) - 1);
+
     if(n < 0) perror("Error en leyendo el socket");
 
     printf("Status Code: (%d)\n", n);
     printf("Mensaje: %s\n", buffer);
-    /*
-    //divide las cadenas de la solicitud y queda con el nombre del archivo solicitado
-    char *filename = strtok(buffer," "); 
-    filename = strtok(NULL," "); 
-    filename = strtok(filename,"/"); 
-    printf("Archivo solicitado: %s\n", filename);
-    */
 
-   char *method = strtok(buffer, " "); //GET o HEAD
-
-   char *line = strtok(buffer, "\n");
-   
+   char *method = strtok(buffer, " "); //GET o HEAD   
 
     if (strcmp(method, "GET") == 0) {
-    printf("Se recibio el metodo GET\n");
-    char *filename = strtok(NULL, " "); //nombre del archivo
-    filename = strtok(filename,"/"); 
+    char *filename = strtok(NULL, " "); //nombre del archivo solicitado
+    filename = strtok(filename, "/"); //nombre del archivo solicitado 
 
         //pregunto si solicito un archivo
         if(filename == NULL){
-            printf("No solicito nada.");
+            printf("No se solicitó un archivo\n");
+            char *response = 
+            "HTTP/1.1 403 Forbidden\r\n"
+            "Content-Length: 0\r\n"
+            "Connection: close\r\n\r\n";
+            write(cliente_socket, response, strlen(response));
+            close(cliente_socket);
+            exit(0);
         }else{
             printf("Archivo solicitado: %s\n", filename);
-        }
+            char baseDir[] = "/home/maximiliano/Descargas/";
+            strcat(baseDir, filename);
+            printf("Ruta del archivo: %s\n", baseDir);
+            //abrir el archivo solicitado
+            FILE *file = fopen(baseDir, "r");
 
+            /*PREGUNTO SI SE PUEDE ABRIR EL ARCHIVO*/
+            if (file == NULL) {
+                printf("No se pudo abrir el archivo\n");
+                char *response = 
+                "HTTP/1.1 404 Not Found\r\n"
+                "Content-Length: 0\r\n"
+                "Connection: close\r\n\r\n";
+            
+                write(cliente_socket, response, strlen(response));
+                close(cliente_socket);
+                exit(0);
+            }
+
+            else {
+                /* PARA HACER CON UN ARCHIVO
+                // Mover el puntero al final del archivo
+                fseek(file, 0, SEEK_END);
+                // Obtener la longitud del archivo
+                long file_length = ftell(file);
+                // Mover el puntero de nuevo al inicio del archivo
+                fseek(file, 0, SEEK_SET);
+            
+                char response[4096];
+                sprintf(response, 
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Length: %ld\r\n"
+                "Connection: close\r\n"
+                "Content-Type: text/html\r\n\r\n", file_length);
+                write(cliente_socket, response, strlen(response));
+
+                // Enviar el contenido del archivo al cliente
+                char buffer[1024];
+                while (fgets(buffer, sizeof(buffer), file) != NULL) {
+                    write(cliente_socket, buffer, strlen(buffer));
+                }
+                fclose(file);
+                */
+                /*ENVIO EL ARCHIVO AL CLIENTE*/
+                char *body = "<html><body><h1>HOLA</h1></body></html>\r\n";
+                int body_length = strlen(body);
+
+                char response[4096];
+                sprintf(response, 
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Length: %d\r\n"
+                "Connection: close\r\n"
+                "Content-Type: text/html\r\n"
+                "\r\n"
+                "%s", body_length, body);
+            
+                write(cliente_socket, response, strlen(response));
+                close(cliente_socket);
+                exit(0);
+            }
+        }
     }
     else if (strcmp(method, "HEAD") == 0) {
     printf("Se recibio el metodo HEAD\n");    
     }
     else {
         printf("Metodo no soportado\n");
-        char *response = "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
+        char *response = 
+        "HTTP/1.1 501 Not Implemented\r\n"
+        "Server: ServidorHTTP/1.0\r\n"
+        "Content-Length: 0\r\n"
+        "Connection: close\r\n\r\n";
+        
         write(cliente_socket, response, strlen(response));
         close(cliente_socket);
         exit(0);
