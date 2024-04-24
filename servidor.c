@@ -42,8 +42,8 @@ int main() {
     bzero((char*) &servidor_addr,sizeof(servidor_addr));
 
     servidor_addr.sin_family = AF_INET;
-    servidor_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     servidor_addr.sin_port = htons(PUERTO);
+    servidor_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 
       if (bind(servidor_socket, (struct sockaddr *) &servidor_addr, sizeof(servidor_addr)) < 0) //Bind the socket to the server address
@@ -69,8 +69,6 @@ int main() {
     if(fork()==0){
     int pid = getpid();
     printf("Proceso hijo creado %d id\n",pid);
-    // Cerrar el socket del servidor en el proceso hijo
-    close(servidor_socket);
 
     // Leer la solicitud del cliente
     ssize_t bytes_recibidos = recv(cliente_socket, buffer, sizeof(buffer) - 1, 0);
@@ -80,7 +78,7 @@ int main() {
     }
     buffer[bytes_recibidos] = '\0'; // Agregar el carácter nulo al final del buffer
 
-    //printf("Solicitud del cliente:\n%s\n", buffer);
+    printf("Solicitud del cliente:\n%s\n", buffer);
 
     // Determinar qué programa ejecutar según la solicitud del cliente
     if (strstr(buffer, "GET") != NULL) {
@@ -111,9 +109,8 @@ int main() {
     exit(0);
     }
     
+}
     // Cerrar el socket del servidor
     close(servidor_socket);
-}
-    
     return 0;
 }
