@@ -87,28 +87,34 @@ int main() {
     printf("Archivo solicitado: %s\n", filename);
     */
 
-   char *method = strtok(buffer, " "); //GET,HEAD o POST
+   char *method = strtok(buffer, " "); //GET o HEAD
+
+   char *line = strtok(buffer, "\n");
+   
 
     if (strcmp(method, "GET") == 0) {
     printf("Se recibio el metodo GET\n");
     char *filename = strtok(NULL, " "); //nombre del archivo
     filename = strtok(filename,"/"); 
-    if(filename == NULL){
-        printf("No solicito nada.");
-    }else{
-        printf("Archivo solicitado: %s\n", filename);
-    }
+
+        //pregunto si solicito un archivo
+        if(filename == NULL){
+            printf("No solicito nada.");
+        }else{
+            printf("Archivo solicitado: %s\n", filename);
+        }
 
     }
     else if (strcmp(method, "HEAD") == 0) {
     printf("Se recibio el metodo HEAD\n");    
     }
     else {
-    printf("Metodo no soportado\n");
+        printf("Metodo no soportado\n");
+        char *response = "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
+        write(cliente_socket, response, strlen(response));
+        close(cliente_socket);
+        exit(0);
     }
-
-  // char *filename = strtok(NULL, " "); //nombre del archivo
-  // printf("Archivo solicitado: %s\n", filename);
 
     /*
     // Determinar qué programa ejecutar según la solicitud del cliente
