@@ -17,12 +17,12 @@ int main(int argc, char *argv[])
     // Asegúrate de que se proporcionaron los argumentos necesarios
     if (argc < 3)
     {
-        fprintf(stderr, "Uso: %s cliente_socket filename\n", argv[0]);
+        fprintf(stderr, "Uso: %s client_socket filename\n", argv[0]);
         exit(1);
     }
 
-    // Convierte el argumento de cliente_socket de nuevo a un entero
-    int cliente_socket = atoi(argv[1]);
+    // Convierte el argumento de client_socket de nuevo a un entero
+    int client_socket = atoi(argv[1]);
 
     // El segundo argumento es el nombre del archivo
     char *filename = argv[2];
@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
                 "Connection: close\r\n\r\n",
                 getActualTime());
 
-        write(cliente_socket, response, strlen(response));
-        close(cliente_socket);
+        write(client_socket, response, strlen(response));
+        close(client_socket);
         exit(0);
     }
     else
@@ -75,16 +75,16 @@ int main(int argc, char *argv[])
                 "Date: %s\r\n"
                 "Content-Type: text/html\r\n\r\n",
                 file_length, getActualTime());
-        write(cliente_socket, response, strlen(response));
+        write(client_socket, response, strlen(response));
 
         // Enviar el contenido del archivo al cliente
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL)
         {
-            write(cliente_socket, buffer, strlen(buffer));
+            write(client_socket, buffer, strlen(buffer));
         }
         fclose(file);
-        close(cliente_socket);
+        close(client_socket);
         return 0;
         // }else if(strcmp(ext,"jpg") == 0){
         //     // Preparar la respuesta HTTP
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         //     "Content-Type: image/jpeg\n"
         //     "\n";
         //     // Enviar la cabecera HTTP al cliente
-        //     send(cliente_socket, reply, strlen(reply), 0);
+        //     send(client_socket, reply, strlen(reply), 0);
 
         //     // Preparar el buffer para leer el archivo
         //     char buffer[1024];
@@ -102,13 +102,13 @@ int main(int argc, char *argv[])
         //     // Leer el archivo y enviarlo al cliente
         //     while (!feof(file)) {
         //         count = fread(buffer, sizeof(char), sizeof(buffer), file);
-        //         send(cliente_socket, buffer, count, 0);
+        //         send(client_socket, buffer, count, 0);
         //         memset(buffer, 0, sizeof(buffer));
         //     }
 
         //     // Cerrar el archivo y el socket
         //     fclose(file);
-        //     close(cliente_socket);
+        //     close(client_socket);
         //     return 0;
         }else{
             char response[4096];
@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
                     "Connection: close\r\n\r\n",
                     getActualTime());
 
-            write(cliente_socket, response, strlen(response));
-            close(cliente_socket);
+            write(client_socket, response, strlen(response));
+            close(client_socket);
             exit(0);
         }
         

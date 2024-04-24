@@ -12,10 +12,10 @@
 
 #include "helpers/getTime.c"
 
-#define PUERTO 8000
+#define PORT 8000
 
 // Creo la funcion sig_chld para que el proceso padre pueda esperar a que los hijos terminen
-void sig_chld(int signo)
+void sig_chld(int signal)
 {
     pid_t pid;
     int stat;
@@ -26,45 +26,45 @@ void sig_chld(int signo)
 
 int main()
 {
-    int servidor_socket, cliente_socket;
-    struct sockaddr_in servidor_addr, cliente_addr;
-    socklen_t cliente_len;
+    int server_socket, client_socket;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t client_len;
     char buffer[4096];
 
     // Crear el socket del servidor
-    servidor_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (servidor_socket < 0)
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0)
     {
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
     }
-    // Permitir la reutilizion del puerto de escucha
+    // Permitir la reutilizion del PORT de escucha
     int option;
     option = SO_REUSEADDR;
-    setsockopt(servidor_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
     // Configurar la estructura de dirección del servidor
-    bzero((char *)&servidor_addr, sizeof(servidor_addr));
+    bzero((char *)&server_addr, sizeof(server_addr));
 
-    servidor_addr.sin_family = AF_INET;
-    servidor_addr.sin_port = htons(PUERTO);
-    servidor_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(servidor_socket, (struct sockaddr *)&servidor_addr, sizeof(servidor_addr)) < 0){
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
         perror("ERROR on binding");
     } // Bind the socket to the server address
 
-    listen(servidor_socket, 5);
+    listen(server_socket, 5);
 
-    printf("Servidor listo para recibir conexiones en el puerto %d\n", PUERTO);
+    printf("Servidor listo para recibir conexiones en el PORT %d\n", PORT);
 
     signal(SIGCHLD, sig_chld);
 
     while (1){
-        cliente_len = sizeof(cliente_addr);
+        client_len = sizeof(client_addr);
 
-        cliente_socket = accept(servidor_socket, (struct sockaddr *)&cliente_addr, &cliente_len);
-        if (cliente_socket < 0){
+        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
+        if (client_socket < 0){
             perror("Error al aceptar la conexión");
             exit(EXIT_FAILURE);
         }
@@ -77,7 +77,7 @@ int main()
             int pid = getpid();
             printf("Proceso hijo creado %d id\n", pid);
 
-            int n = read(cliente_socket, buffer, sizeof(buffer) - 1);
+            int n = read(client_socket, buffer, sizeof(buffer) - 1);
 
             if (n < 0)
                 perror("Error en leyendo el socket");
@@ -103,13 +103,13 @@ int main()
                                     "Date: %s\r\n"
                                     "Connection: close\r\n\r\n",
                                     getActualTime());
-                            write(cliente_socket, response, strlen(response));
-                            close(cliente_socket);
+                            write(client_socket, response, strlen(response));
+                            close(client_socket);
                             exit(0);
                         }else{
-                            char cliente_socket_str[12];
-                            sprintf(cliente_socket_str, "%d", cliente_socket); // Convertir el descriptor de archivo a una cadena
-                            char *args[] = {"./pedido_get", cliente_socket_str, filename, NULL};
+                            char client_socket_str[12];
+                            sprintf(client_socket_str, "%d", client_socket); // Convertir el descriptor de archivo a una cadena
+                            char *args[] = {"./pedido_get", client_socket_str, filename, NULL};
                             execv(args[0], args);
                             exit(0);
                         }
@@ -130,13 +130,13 @@ int main()
                                     "Date: %s\r\n"
                                     "Connection: close\r\n\r\n",
                                     getActualTime());
-                            write(cliente_socket, response, strlen(response));
-                            close(cliente_socket);
+                            write(client_socket, response, strlen(response));
+                            close(client_socket);
                             exit(0);
                         }else{
-                            char cliente_socket_str[12];
-                            sprintf(cliente_socket_str, "%d", cliente_socket); // Convertir el descriptor de archivo a una cadena
-                            char *args[] = {"./pedido_head", cliente_socket_str, filename, NULL};
+                            char client_socket_str[12];
+                            sprintf(client_socket_str, "%d", client_socket); // Convertir el descriptor de archivo a una cadena
+                            char *args[] = {"./pedido_head", client_socket_str, filename, NULL};
                             execv(args[0], args);
                             exit(0);
                         }
@@ -153,17 +153,17 @@ int main()
                         "Connection: close\r\n\r\n",
                         getActualTime());
 
-                write(cliente_socket, response, strlen(response));
-                close(cliente_socket);
+                write(client_socket, response, strlen(response));
+                close(client_socket);
                 exit(0);
             }
 
             // Cerrar el socket del cliente
-            close(cliente_socket);
+            close(client_socket);
             exit(0);
         }
     }
     // Cerrar el socket del servidor
-    close(servidor_socket);
+    close(server_socket);
     return 0;
 }
