@@ -82,7 +82,7 @@ int main()
             if (n < 0)
                 perror("Error en leyendo el socket");
 
-            printf("Status Code: (%d)\n", n);
+            printf("Tamaño en bytes del mensaje del cliente: (%d)\n", n);
             printf("Mensaje: %s\n", buffer);
 
             char *method = strtok(buffer, " "); // GET o HEAD
