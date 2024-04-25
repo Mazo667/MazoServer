@@ -10,14 +10,12 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "helpers/getTime.c"
-#include "helpers/getFileSize.c"
+#include "helpers/gettime.c"
+#include "helpers/getfilesize.c"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Asegúrate de que se proporcionaron los argumentos necesarios
-    if (argc < 3)
-    {
+    if (argc < 3) {
         fprintf(stderr, "Uso: %s client_socket filename\n", argv[0]);
         exit(1);
     }
@@ -36,13 +34,12 @@ int main(int argc, char *argv[])
     // abrir el archivo solicitado
     FILE *file = fopen(baseDir, "r");
 
-    char *ext = strtok(filename,".");
-    ext = strtok(NULL,".");
+    char *ext = strtok(filename, ".");
+    ext = strtok(NULL, ".");
     printf("Extension: %s\n", ext);
 
     /*PREGUNTO SI SE PUEDE ABRIR EL ARCHIVO*/
-    if (file == NULL)
-    {
+    if (file == NULL) {
         printf("No se pudo abrir el archivo\n");
         char response[4096];
         sprintf(response,
@@ -56,12 +53,10 @@ int main(int argc, char *argv[])
         write(client_socket, response, strlen(response));
         close(client_socket);
         exit(0);
-    }
-    else
-    {
-        if(strcmp(ext,"html") == 0){
+    } else {
+        if (strcmp(ext, "html") == 0) {
             // Preparar la respuesta HTTP
-            char response[1024];
+            char response[4096];
             sprintf(response,
                     "HTTP/1.1 200 OK\r\n"
                     "Server: ServidorSejin/1.0\r\n"
@@ -72,50 +67,28 @@ int main(int argc, char *argv[])
                     getFileSize(baseDir), getActualTime());
             write(client_socket, response, strlen(response));
 
-            // Enviar el contenido del archivo al cliente
-            char buffer[1024];
-            while (fgets(buffer, sizeof(buffer), file) != NULL)
-            {
-                write(client_socket, buffer, strlen(buffer));
-            }
             fclose(file);
             close(client_socket);
             return 0;
-        }else if(strcmp(ext,"jpg") == 0){
+        } else if (strcmp(ext, "jpg") == 0) {
             // Preparar la respuesta HTTP
             char response[1024];
             sprintf(response,
-                "HTTP/1.1 200 OK\r\n"
-                "Server: ServidorSejin/1.0\r\n"
-                "Content-Length: %ld\r\n"
-                "Connection: close\r\n"
-                "Date: %s\r\n"
-                "Content-Type: image/jpeg\r\n\r\n",
-                getFileSize(baseDir), getActualTime());
+                    "HTTP/1.1 200 OK\r\n"
+                    "Server: ServidorSejin/1.0\r\n"
+                    "Content-Length: %ld\r\n"
+                    "Connection: close\r\n"
+                    "Date: %s\r\n"
+                    "Content-Type: image/jpeg\r\n\r\n",
+                    getFileSize(baseDir), getActualTime());
             write(client_socket, response, strlen(response));
-
-            // Preparar el buffer para leer el archivo
-            char buffer[1024];
-            size_t count;
-
-            // Leer el archivo y enviarlo al cliente
-            while(feof(file) == 0){
-                count = fread(buffer, sizeof(char), sizeof(buffer), file);
-                send(client_socket, buffer, count, 0);
-                bzero(buffer, sizeof(buffer));
-            }
-
-            // Comprobar si ha ocurrido un error al leer el archivo
-            if (ferror(file)) {
-                perror("Error al leer el archivo");
-            }
 
             // Cerrar el archivo y el socket
             fclose(file);
             close(client_socket);
             return 0;
-        }else{
-            char response[1024];
+        } else {
+            char response[4096];
             sprintf(response,
                     "HTTP/1.1 501 Not Implemented\r\n"
                     "Server: ServidorSejin/1.0\r\n"
@@ -128,6 +101,5 @@ int main(int argc, char *argv[])
             close(client_socket);
             exit(0);
         }
-        
     }
 }

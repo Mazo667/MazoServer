@@ -10,13 +10,12 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "helpers/getTime.c"
+#include "helpers/gettime.c"
 
 #define PORT 8000
 
 // Creo la funcion sig_chld para que el proceso padre pueda esperar a que los hijos terminen
-void sig_chld(int signal)
-{
+void sig_chld(int signal){
     pid_t pid;
     int stat;
     while ((pid = waitpid(-1, &stat, WNOHANG)) > 0)
@@ -24,8 +23,7 @@ void sig_chld(int signal)
     return;
 }
 
-int main()
-{
+int main(){
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len;
@@ -33,8 +31,7 @@ int main()
 
     // Crear el socket del servidor
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket < 0)
-    {
+    if (server_socket < 0){
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
     }
@@ -51,8 +48,8 @@ int main()
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
-        perror("ERROR on binding");
-    } // Bind the socket to the server address
+        perror("ERROR en bind");
+    }
 
     listen(server_socket, 5);
 
@@ -79,17 +76,18 @@ int main()
 
             int n = read(client_socket, buffer, sizeof(buffer) - 1);
 
-            if (n < 0)
+            if (n < 0){
                 perror("Error en leyendo el socket");
+            }
 
             printf("Tamaño en bytes del mensaje del cliente: (%d)\n", n);
             printf("Mensaje: %s\n", buffer);
 
             char *method = strtok(buffer, " "); // GET o HEAD
-            char *filename = strtok(NULL, " "); // nombre del archivo solicitado
+            char *filename = strtok(NULL, " "); // Nombre del archivo solicitado
             
             if (strcmp(method, "GET") == 0){
-                        // pregunto si  solicito un archivo
+                        // Pregunto si solicito un archivo
                         if (filename == NULL){
                             printf("No se solicitó un archivo\n");
                             char response[4096];
@@ -106,13 +104,13 @@ int main()
                         }else{
                             char client_socket_str[12];
                             sprintf(client_socket_str, "%d", client_socket); // Convertir el descriptor de archivo a una cadena
-                            char *args[] = {"./pedido_get", client_socket_str, filename, NULL};
+                            char *args[] = {"./requestget", client_socket_str, filename, NULL};
                             execv(args[0], args);
                             exit(0);
                         }
 
             } else if (strcmp(method, "HEAD") == 0) {
-                        // pregunto si  solicito un archivo
+                        // Pregunto si solicito un archivo
                         if (filename == NULL){
                             printf("No se solicitó un archivo\n");
                             char response[4096];
@@ -129,13 +127,11 @@ int main()
                         }else{
                             char client_socket_str[12];
                             sprintf(client_socket_str, "%d", client_socket); // Convertir el descriptor de archivo a una cadena
-                            char *args[] = {"./pedido_head", client_socket_str, filename, NULL};
+                            char *args[] = {"./requesthead", client_socket_str, filename, NULL};
                             execv(args[0], args);
                             exit(0);
                         }
-
-            }
-            else {
+            } else {
                 printf("Metodo no soportado\n");
                 char response[4096];
                 sprintf(response,
