@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 
 #include "helpers/getTime.c"
+#include "helpers/getFileSize.c"
 
 int main(int argc, char *argv[])
 {
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
     char *filename = argv[2];
 
     printf("Archivo solicitado: %s\n", filename);
-    char baseDir[] = "/home/maximiliano/Descargas/";
+    char baseDir[] = "../";
     strcat(baseDir, filename);
     printf("Ruta del archivo: %s\n", baseDir);
 
@@ -59,57 +60,58 @@ int main(int argc, char *argv[])
     else
     {
         if(strcmp(ext,"html") == 0){
-        // Mover el puntero al final del archivo
-        fseek(file, 0, SEEK_END);
-        // Obtener la longitud del archivo
-        long file_length = ftell(file);
-        // Mover el puntero de nuevo al inicio del archivo
-        fseek(file, 0, SEEK_SET);
+            // Preparar la respuesta HTTP
+            char response[4096];
+            sprintf(response,
+                    "HTTP/1.1 200 OK\r\n"
+                    "Server: ServidorSejin/1.0\r\n"
+                    "Content-Length: %ld\r\n"
+                    "Connection: close\r\n"
+                    "Date: %s\r\n"
+                    "Content-Type: text/html\r\n\r\n",
+                    getFileSize(baseDir), getActualTime());
+            write(client_socket, response, strlen(response));
 
-        char response[4096];
-        sprintf(response,
+            // Enviar el contenido del archivo al cliente
+            char buffer[1024];
+            while (fgets(buffer, sizeof(buffer), file) != NULL)
+            {
+                write(client_socket, buffer, strlen(buffer));
+            }
+            fclose(file);
+            close(client_socket);
+            return 0;
+        }else if(strcmp(ext,"jpg") == 0){
+            // Preparar la respuesta HTTP
+            char response[4096];
+            sprintf(response,
                 "HTTP/1.1 200 OK\r\n"
                 "Server: ServidorSejin/1.0\r\n"
                 "Content-Length: %ld\r\n"
                 "Connection: close\r\n"
                 "Date: %s\r\n"
                 "Content-Type: text/html\r\n\r\n",
-                file_length, getActualTime());
-        write(client_socket, response, strlen(response));
+                getFileSize(baseDir), getActualTime());
+            write(client_socket, response, strlen(response));
 
-        // Enviar el contenido del archivo al cliente
-        char buffer[1024];
-        while (fgets(buffer, sizeof(buffer), file) != NULL)
-        {
-            write(client_socket, buffer, strlen(buffer));
-        }
-        fclose(file);
-        close(client_socket);
-        return 0;
-        // }else if(strcmp(ext,"jpg") == 0){
-        //     // Preparar la respuesta HTTP
-        //     char reply[44] = 
-        //     "HTTP/1.1 200 OK\n"
-        //     "Content-Type: image/jpeg\n"
-        //     "\n";
-        //     // Enviar la cabecera HTTP al cliente
-        //     send(client_socket, reply, strlen(reply), 0);
+            // Preparar el buffer para leer el archivo
+            char buffer[1024];
+            size_t count;
 
-        //     // Preparar el buffer para leer el archivo
-        //     char buffer[1024];
-        //     int count;
+            // Leer el archivo y enviarlo al cliente
+            while ((count = fread(buffer, sizeof(char), sizeof(buffer), file)) > 0) {
+                write(client_socket, buffer, count);
+            }
 
-        //     // Leer el archivo y enviarlo al cliente
-        //     while (!feof(file)) {
-        //         count = fread(buffer, sizeof(char), sizeof(buffer), file);
-        //         send(client_socket, buffer, count, 0);
-        //         memset(buffer, 0, sizeof(buffer));
-        //     }
+            // Comprobar si ha ocurrido un error al leer el archivo
+            if (ferror(file)) {
+                perror("Error al leer el archivo");
+            }
 
-        //     // Cerrar el archivo y el socket
-        //     fclose(file);
-        //     close(client_socket);
-        //     return 0;
+            // Cerrar el archivo y el socket
+            fclose(file);
+            close(client_socket);
+            return 0;
         }else{
             char response[4096];
             sprintf(response,

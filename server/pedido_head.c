@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 
 #include "helpers/getTime.c"
+#include "helpers/getFileSize.c"
 
 int main(int argc, char *argv[])
 {
@@ -35,8 +36,8 @@ int main(int argc, char *argv[])
     // abrir el archivo solicitado
     FILE *file = fopen(baseDir, "r");
 
-    char *ext = strtok(filename,"."); // 확장자를 떼오기
-    ext = strtok(NULL,"."); // 위와 동일
+    char *ext = strtok(filename,"."); 
+    ext = strtok(NULL,"."); 
     printf("Extension: %s\n", ext);
 
     /*PREGUNTO SI SE PUEDE ABRIR EL ARCHIVO*/
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
                 "Connection: close\r\n"
                 "Date: %s\r\n"
                 "Content-Type: text/html\r\n\r\n",
-                file_length, getActualTime());
+                getFileSize(baseDir), getActualTime());
         write(client_socket, response, strlen(response));
 
         fclose(file);

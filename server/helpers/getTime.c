@@ -2,11 +2,11 @@
 #include <stdlib.h>
 
 char* getActualTime() {
-    time_t tiempoActual = time(NULL);
-    struct tm* fechaActual = gmtime(&tiempoActual);
+    time_t actualTime = time(NULL);
+    struct tm* actualDate = gmtime(&actualTime);
 
-    static char fechaHoraFormato[100];
-    strftime(fechaHoraFormato, sizeof(fechaHoraFormato), "%a, %d %b %Y %H:%M:%S %Z", fechaActual);
+    static char dateFormat[100];
+    strftime(dateFormat, sizeof(dateFormat), "%a, %d %b %Y %H:%M:%S %Z", actualDate);
 
-    return fechaHoraFormato;
+    return dateFormat;
 }
