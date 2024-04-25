@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
     // abrir el archivo solicitado
     FILE *file = fopen(baseDir, "r");
 
-    char *ext = strtok(filename,"."); // 확장자를 떼오기
-    ext = strtok(NULL,"."); // 위와 동일
+    char *ext = strtok(filename,".");
+    ext = strtok(NULL,".");
     printf("Extension: %s\n", ext);
 
     /*PREGUNTO SI SE PUEDE ABRIR EL ARCHIVO*/
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     {
         if(strcmp(ext,"html") == 0){
             // Preparar la respuesta HTTP
-            char response[4096];
+            char response[1024];
             sprintf(response,
                     "HTTP/1.1 200 OK\r\n"
                     "Server: ServidorSejin/1.0\r\n"
@@ -83,14 +83,14 @@ int main(int argc, char *argv[])
             return 0;
         }else if(strcmp(ext,"jpg") == 0){
             // Preparar la respuesta HTTP
-            char response[4096];
+            char response[1024];
             sprintf(response,
                 "HTTP/1.1 200 OK\r\n"
                 "Server: ServidorSejin/1.0\r\n"
                 "Content-Length: %ld\r\n"
                 "Connection: close\r\n"
                 "Date: %s\r\n"
-                "Content-Type: text/html\r\n\r\n",
+                "Content-Type: image/jpeg\r\n\r\n",
                 getFileSize(baseDir), getActualTime());
             write(client_socket, response, strlen(response));
 
@@ -99,8 +99,10 @@ int main(int argc, char *argv[])
             size_t count;
 
             // Leer el archivo y enviarlo al cliente
-            while ((count = fread(buffer, sizeof(char), sizeof(buffer), file)) > 0) {
-                write(client_socket, buffer, count);
+            while(feof(file) == 0){
+                count = fread(buffer, sizeof(char), sizeof(buffer), file);
+                send(client_socket, buffer, count, 0);
+                bzero(buffer, sizeof(buffer));
             }
 
             // Comprobar si ha ocurrido un error al leer el archivo
@@ -113,7 +115,7 @@ int main(int argc, char *argv[])
             close(client_socket);
             return 0;
         }else{
-            char response[4096];
+            char response[1024];
             sprintf(response,
                     "HTTP/1.1 501 Not Implemented\r\n"
                     "Server: ServidorSejin/1.0\r\n"
