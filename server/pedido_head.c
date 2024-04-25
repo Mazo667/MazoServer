@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     char *filename = argv[2];
 
     printf("Archivo solicitado: %s\n", filename);
-    char baseDir[] = "/home/maximiliano/Descargas/";
+     char baseDir[] = "../";
     strcat(baseDir, filename);
     printf("Ruta del archivo: %s\n", baseDir);
 

@@ -86,12 +86,9 @@ int main()
             printf("Mensaje: %s\n", buffer);
 
             char *method = strtok(buffer, " "); // GET o HEAD
-
+            char *filename = strtok(NULL, " "); // nombre del archivo solicitado
+            
             if (strcmp(method, "GET") == 0){
-                        char *filename = strtok(NULL, " "); // nombre del archivo solicitado
-                        filename = strtok(filename, "/");   // nombre del archivo solicitado
-                        printf("filename: %s\n", filename);
-                        
                         // pregunto si  solicito un archivo
                         if (filename == NULL){
                             printf("No se solicitó un archivo\n");
@@ -115,10 +112,6 @@ int main()
                         }
 
             } else if (strcmp(method, "HEAD") == 0) {
-                        char *filename = strtok(NULL, " "); // nombre del archivo solicitado
-                        filename = strtok(filename, "/");   // nombre del archivo solicitado
-                        printf("filename: %s\n", filename);
-
                         // pregunto si  solicito un archivo
                         if (filename == NULL){
                             printf("No se solicitó un archivo\n");
