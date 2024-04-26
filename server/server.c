@@ -15,7 +15,7 @@
 #define PORT 8000
 
 // Creo la funcion sig_chld para que el proceso padre pueda esperar a que los hijos terminen
-void sig_chld(int signal){
+void sig_chld(int /*signal*/){
     pid_t pid;
     int stat;
     while ((pid = waitpid(-1, &stat, WNOHANG)) > 0)
