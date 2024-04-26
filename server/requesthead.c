@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
                 "Connection: close\r\n\r\n",
                 getActualTime());
 
-        write(client_socket, response, strlen(response));
+        send(client_socket, response, strlen(response), 0);
         close(client_socket);
         exit(0);
     } else {
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
                     "Date: %s\r\n"
                     "Content-Type: text/html\r\n\r\n",
                     getFileSize(baseDir), getActualTime());
-            write(client_socket, response, strlen(response));
+            send(client_socket, response, strlen(response), 0);
 
             fclose(file);
             close(client_socket);
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
                     "Date: %s\r\n"
                     "Content-Type: image/jpeg\r\n\r\n",
                     getFileSize(baseDir), getActualTime());
-            write(client_socket, response, strlen(response));
+            send(client_socket, response, strlen(response), 0);
 
             // Cerrar el archivo y el socket
             fclose(file);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
                     "Connection: close\r\n\r\n",
                     getActualTime());
 
-            write(client_socket, response, strlen(response));
+            send(client_socket, response, strlen(response), 0);
             close(client_socket);
             exit(0);
         }

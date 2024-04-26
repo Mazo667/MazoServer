@@ -41,7 +41,7 @@ int main(){
     setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
     // Configurar la estructura de dirección del servidor
-    bzero((char *)&server_addr, sizeof(server_addr));
+    memset((char *)&server_addr, 0, sizeof(server_addr)); //bzero despreciado
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
@@ -66,7 +66,7 @@ int main(){
             exit(EXIT_FAILURE);
         }
         // Eliminar basura del buffer
-        bzero(buffer, 4096);
+        memset(buffer, 0, sizeof(buffer));
 
         printf("Conexión aceptada\n");
 
@@ -99,7 +99,7 @@ int main(){
                                     "Date: %s\r\n"
                                     "Connection: close\r\n\r\n",
                                     getActualTime());
-                            write(client_socket, response, strlen(response));
+                            send(client_socket, response, strlen(response), 0);
                             close(client_socket);
                             exit(0);
                         }else{
@@ -124,7 +124,7 @@ int main(){
                                     "Connection: close\r\n\r\n",
                                     getActualTime());
                             // Envío la respuesta HTTP
-                            write(client_socket, response, strlen(response));
+                            send(client_socket, response, strlen(response), 0);
                             // Cierro la conexión
                             close(client_socket);
                             exit(0);
@@ -146,7 +146,7 @@ int main(){
                         "Connection: close\r\n\r\n",
                         getActualTime());
                 // Envío la respuesta HTTP
-                write(client_socket, response, strlen(response));
+                send(client_socket, response, strlen(response), 0);
                 close(client_socket);
                 exit(0);
             }

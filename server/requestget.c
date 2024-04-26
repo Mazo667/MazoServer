@@ -49,8 +49,8 @@ int main(int argc, char *argv[]){
                 "Date: %s\r\n"
                 "Connection: close\r\n\r\n",
                 getActualTime());
-
-        write(client_socket, response, strlen(response));
+        // Envío la respuesta HTTP
+        send(client_socket, response, strlen(response), 0);
         close(client_socket);
         exit(0);
     }else{
@@ -65,12 +65,12 @@ int main(int argc, char *argv[]){
                     "Date: %s\r\n"
                     "Content-Type: text/html\r\n\r\n",
                     getFileSize(baseDir), getActualTime());
-            write(client_socket, response, strlen(response));
+            send(client_socket, response, strlen(response), 0);
 
             // Enviar el contenido del archivo al cliente
             char buffer[1024];
             while (fgets(buffer, sizeof(buffer), file) != NULL){
-                write(client_socket, buffer, strlen(buffer));
+                send(client_socket, buffer, strlen(buffer), 0);
             }
             fclose(file);
             close(client_socket);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]){
                 "Date: %s\r\n"
                 "Content-Type: image/jpeg\r\n\r\n",
                 getFileSize(baseDir), getActualTime());
-            write(client_socket, response, strlen(response));
+            send(client_socket, response, strlen(response), 0);
 
             // Preparar el buffer para leer el archivo
             char buffer[1024];
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
             while(feof(file) == 0){
                 count = fread(buffer, sizeof(char), sizeof(buffer), file);
                 send(client_socket, buffer, count, 0);
-                bzero(buffer, sizeof(buffer));
+                memset(buffer, 0, sizeof(buffer));
             }
 
             // Comprobar si ha ocurrido un error al leer el archivo
@@ -117,8 +117,8 @@ int main(int argc, char *argv[]){
                     "Content-Length: 0\r\n"
                     "Connection: close\r\n\r\n",
                     getActualTime());
-
-            write(client_socket, response, strlen(response));
+            // Envío la respuesta HTTP
+            send(client_socket, response, strlen(response), 0);
             close(client_socket);
             exit(0);
         }
