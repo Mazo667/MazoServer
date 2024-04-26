@@ -49,6 +49,8 @@ int main(){
 
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
         perror("ERROR en bind");
+        close(server_socket); // Cierro el servidor
+        exit(EXIT_FAILURE);
     }
 
     listen(server_socket, 5);
@@ -94,7 +96,7 @@ int main(){
                             printf("No se solicitó un archivo\n");
                             char response[4096];
                             sprintf(response,
-                                    "HTTP/1.1 403 Forbidden\r\n"
+                                    "HTTP/1.1 400 Bad Request\r\n"
                                     "Server: ServidorSejin/1.0\r\n"
                                     "Content-Length: 0\r\n"
                                     "Date: %s\r\n"
@@ -118,7 +120,7 @@ int main(){
                             printf("No se solicitó un archivo\n");
                             char response[4096];
                             sprintf(response,
-                                    "HTTP/1.1 403 Forbidden\r\n"
+                                    "HTTP/1.1 400 Bad Request\r\n"
                                     "Server: ServidorSejin/1.0\r\n"
                                     "Content-Length: 0\r\n"
                                     "Date: %s\r\n"
