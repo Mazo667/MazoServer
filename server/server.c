@@ -59,17 +59,18 @@ int main(){
 
     while (1){
         client_len = sizeof(client_addr);
-
+        // Acepto la conexión del cliente
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
         if (client_socket < 0){
             perror("Error al aceptar la conexión");
             exit(EXIT_FAILURE);
         }
-
+        // Eliminar basura del buffer
         bzero(buffer, 4096);
 
         printf("Conexión aceptada\n");
 
+        // Creó el proceso hijo para atender al cliente
         if (fork() == 0) {
             int pid = getpid();
             printf("Proceso hijo creado %d id\n", pid);
@@ -103,7 +104,8 @@ int main(){
                             exit(0);
                         }else{
                             char client_socket_str[12];
-                            sprintf(client_socket_str, "%d", client_socket); // Convertir el descriptor de archivo a una cadena
+                            // Convierto el descriptor de archivo a una cadena
+                            sprintf(client_socket_str, "%d", client_socket); 
                             char *args[] = {"./requestget", client_socket_str, filename, NULL};
                             execv(args[0], args);
                             exit(0);
@@ -121,7 +123,9 @@ int main(){
                                     "Date: %s\r\n"
                                     "Connection: close\r\n\r\n",
                                     getActualTime());
+                            // Envío la respuesta HTTP
                             write(client_socket, response, strlen(response));
+                            // Cierro la conexión
                             close(client_socket);
                             exit(0);
                         }else{
@@ -141,7 +145,7 @@ int main(){
                         "Content-Length: 0\r\n"
                         "Connection: close\r\n\r\n",
                         getActualTime());
-
+                // Envío la respuesta HTTP
                 write(client_socket, response, strlen(response));
                 close(client_socket);
                 exit(0);
