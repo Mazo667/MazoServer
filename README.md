@@ -1,5 +1,5 @@
 <h1>Servidor MAZO programado en C</h1>
-![MazoServer](https://github.com/Mazo667/servidorTCP/assets/68477400/33b4d508-07c0-49d4-ae4a-77c7f06870ce)
+<img src="https://github.com/Mazo667/servidorTCP/assets/68477400/33b4d508-07c0-49d4-ae4a-77c7f06870ce" alt="MAZO SERVER">
 
 <h3> Servidor TCP </h3>
 
