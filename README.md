@@ -1,5 +1,4 @@
-#Sevidor TCP
-Servidor TCP programado en C (NICOLAS BARRIENTOS - FAVA MAXIMILIANO)
+<em>Servidor TCP programado en C (NICOLAS BARRIENTOS - FAVA MAXIMILIANO)</em>
 
 #Objetivos del Trabajo Práctico:
   Desarrollar un servidor web que sea capaz de manejar solicitudes HTTP GET y HEAD.
